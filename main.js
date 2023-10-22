@@ -130,7 +130,7 @@ function fill_squares_from_array(current_row=0, current_col=0, ini=0)
         {
             for (let j = 0; j < width; j++)
             {
-                board_inner_html += `<img src="pngs/covered.png" alt="" row-id="`+i+`" col-id="`+j+`">\n`
+                board_inner_html += `<img src="pngs/covered.PNG" alt="" row-id="`+i+`" col-id="`+j+`">\n`
             }
         }
         board.innerHTML = board_inner_html;
@@ -163,7 +163,7 @@ function fill_squares_from_array(current_row=0, current_col=0, ini=0)
             {
                 if (board_state[i][j] == 1)
                 {
-                    temp = "pngs/covered.png";
+                    temp = "pngs/covered.PNG";
                 }
                 else
                 {
