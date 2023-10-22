@@ -80,7 +80,7 @@ function check_current_square(i,j)
             {
                 if (item.getAttribute("col-id") == j)
                 {
-                    item.src = "./pngs/"+board_truth[i][j]+".PNG";
+                    item.src = "./pngs/"+board_truth[i][j]+".png";
                 }
             }
         }
@@ -96,7 +96,7 @@ function check_current_square(i,j)
         {
             if (item.getAttribute("col-id") == j)
             {
-                item.src = "./pngs/0.PNG";
+                item.src = "./pngs/0.png";
             }
         }
     }
@@ -130,7 +130,7 @@ function fill_squares_from_array(current_row=0, current_col=0, ini=0)
         {
             for (let j = 0; j < width; j++)
             {
-                board_inner_html += `<img src="./pngs/covered.PNG" alt="" row-id="`+i+`" col-id="`+j+`">\n`
+                board_inner_html += `<img src="./pngs/covered.png" alt="" row-id="`+i+`" col-id="`+j+`">\n`
             }
         }
         board.innerHTML = board_inner_html;
@@ -163,11 +163,11 @@ function fill_squares_from_array(current_row=0, current_col=0, ini=0)
             {
                 if (board_state[i][j] == 1)
                 {
-                    temp = "./pngs/covered.PNG";
+                    temp = "./pngs/covered.png";
                 }
                 else
                 {
-                    temp = "./pngs/"+board_truth[i][j]+".PNG";
+                    temp = "./pngs/"+board_truth[i][j]+".png";
                 }
                 let row_elements = board.querySelectorAll('[row-id="'+i+'"]');
                 for (let item of row_elements)
