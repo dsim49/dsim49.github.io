@@ -6,10 +6,14 @@ let height = 9;
 let mines = 10;
 board_state = [];
 board_truth = [];
+flags = [];
+let game = 1;
+let win = 0;
 // Create an empty html collectino object (not trivial)
 let images = document.createElement("div").getElementsByClassName('noClassHere');
 load_page();
 board_init();
+flags_init();
 
 for (let e of diff_options)
 {
@@ -36,10 +40,21 @@ for (let e of diff_options)
         {
             alert('error');
         }
+        game = 1;
+        win = 0;
         load_page();
         board_init();
+        flags_init();
     })
 }
+
+// Reset cope image
+document.addEventListener("mouseup", () => {
+    if (game)
+    {
+        document.getElementsByClassName("status-image")[0].src = "./pngs/wojak.png";
+    }
+})
 
 function load_page()
 {
@@ -64,6 +79,18 @@ function board_init(value=1)
     }
 }
 
+function flags_init(value=0)
+{
+    for (let i = 0; i < height; i++)
+    {
+        flags[i] = [];
+        for (let j = 0; j < width; j++)
+        {
+            flags[i][j] = value;
+        }
+    }
+}
+
 function check_current_square(i,j)
 {
     if (Array.isArray(board_truth) && board_truth.length)
@@ -71,7 +98,15 @@ function check_current_square(i,j)
         value = board_truth[i][j];
         if (value == 9)
         {
-            console.log("GAME OVER!\n");
+            let row_elements = board.querySelectorAll('[row-id="'+i+'"]');
+            for (let item of row_elements)
+            {
+                if (item.getAttribute("col-id") == j)
+                {
+                    item.src = "./pngs/mine.png";
+                }
+            }
+            game = 0;
         }
         else
         {
@@ -114,8 +149,49 @@ function update_board(i,j)
         {
             console.log("ERROR in update_board: something went wrong");
         }
-        // Only need to do anything at all, if board_truth[i][j] is zero.
-        recurse_uncover(Number(i),Number(j));
+        // Only need to do anything at all, if board_truth[i][j] is zero, or game over.
+        if (board_truth[i][j] == 9)
+        {
+            // Stepped on a mine, uncover all mines and quit
+            for (let k = 0; k < height; k++)
+            {
+                for (let l = 0; l < width; l++)
+                {
+                    if (board_truth[k][l] == 9)
+                    {
+                        board_state[k][l] = 0;
+                    }
+                }
+            }
+        }
+        else
+        {
+            recurse_uncover(Number(i),Number(j));
+        }
+        // Check win status
+        let num_covered_squares = 0;
+        for (let item of board_state)
+        {
+            num_covered_squares += item.filter((x) => x==1).length;
+        }
+        if (num_covered_squares <= mines && game == 1)
+        {
+            win = 1;
+            game = 0;
+            // Explicitly set mines to covered
+            for (let k = 0; k < height; k++)
+            {
+                for (let l = 0; l < width; l++)
+                {
+                    if (board_truth[k][l] == 9)
+                    {
+                        board_state[k][l] = 1;
+                    }
+                }
+            }
+            // set gigachad
+            document.getElementsByClassName("status-image")[0].src = "./pngs/chad.png";
+        }
     }
 }
 
@@ -130,7 +206,8 @@ function fill_squares_from_array(current_row=0, current_col=0, ini=0)
         {
             for (let j = 0; j < width; j++)
             {
-                board_inner_html += `<img src="./pngs/covered.PNG" alt="" row-id="`+i+`" col-id="`+j+`">\n`
+                board_inner_html += `<img draggable="false" class="square" src="./pngs/covered.PNG" 
+                alt="" row-id="`+i+`" col-id="`+j+`">\n`
             }
         }
         board.innerHTML = board_inner_html;
@@ -139,16 +216,38 @@ function fill_squares_from_array(current_row=0, current_col=0, ini=0)
         {
             let row = im.getAttribute("row-id");
             let col = im.getAttribute("col-id");
-            im.addEventListener("click", function() {
-                // Initialize board_truth if not already done so
-                if (!(Array.isArray(board_truth) && board_truth.length))
+            im.addEventListener("mouseup", function(ev) {
+                if (ev.button == 0 && game && flags[row][col] == 0)
                 {
-                    initialize_board(row, col);
+                    // Initialize board_truth if not already done so
+                    if (!(Array.isArray(board_truth) && board_truth.length))
+                    {
+                        initialize_board(row, col);
+                    }
+                    check_current_square(row, col);
+                    update_board(row,col);
+                    fill_squares_from_array(row, col);
                 }
-                check_current_square(row, col);
-                update_board(row,col);
-                fill_squares_from_array(row, col);
             });
+            im.addEventListener('contextmenu', (ev) => {
+                ev.preventDefault();
+                if (im.src.search("covered") > -1)
+                {
+                    im.src = "./pngs/flag.png";
+                    flags[row][col] = 1;
+                }
+                else if (board_state[row][col] == 1)
+                {
+                    im.src = "./pngs/covered.PNG";
+                    flags[row][col] = 0;
+                }
+            });
+            im.addEventListener('mousedown', (ev) => {
+                if (ev.button == 0 && game)
+                {
+                    document.getElementsByClassName("status-image")[0].src = "./pngs/cope.png";
+                }
+            })
         }
         // Make sure board_truth is NOT initialized
         board_truth = [];
@@ -156,25 +255,43 @@ function fill_squares_from_array(current_row=0, current_col=0, ini=0)
 
     else
     {
-        let temp = "";
+        let temp = "./pngs/covered.PNG";
         for (let i = 0; i < height; i++)
         {
             for (let j = 0; j < width; j++)
             {
-                if (board_state[i][j] == 1)
+                if (board_state[i][j] == 0)
                 {
-                    temp = "./pngs/covered.PNG";
-                }
-                else
-                {
-                    temp = "./pngs/"+board_truth[i][j]+".png";
-                }
-                let row_elements = board.querySelectorAll('[row-id="'+i+'"]');
-                for (let item of row_elements)
-                {
-                    if (item.getAttribute("col-id") == j)
+                    if (board_truth[i][j] == 9)
                     {
-                        item.src = temp;
+                        temp = "./pngs/mine.png";
+                    }
+                    else
+                    {
+                        temp = "./pngs/"+board_truth[i][j]+".png";
+                    }
+                    let row_elements = board.querySelectorAll('[row-id="'+i+'"]');
+                    for (let item of row_elements)
+                    {
+                        if (item.getAttribute("col-id") == j)
+                        {
+                            item.src = temp;
+                        }
+                    }
+                }
+                else if (win)
+                {
+                    if (board_state[i][j] != 1)
+                    {
+                        console.log("ERROR: something bad happened idk");
+                    }
+                    let row_elements = board.querySelectorAll('[row-id="'+i+'"]');
+                    for (let item of row_elements)
+                    {
+                        if (item.getAttribute("col-id") == j)
+                        {
+                            item.src = "./pngs/flag.png";
+                        }
                     }
                 }
             }
