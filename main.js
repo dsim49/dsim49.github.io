@@ -42,6 +42,9 @@ for (let e of diff_options)
         }
         game = 1;
         win = 0;
+        board_state = [];
+        board_truth = [];
+        flags = [];
         load_page();
         board_init();
         flags_init();
