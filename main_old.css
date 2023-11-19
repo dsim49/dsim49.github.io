@@ -1,0 +1,23 @@
+.board {
+    border: 2px solid red;
+    display: grid;
+    grid-template-columns: 20px 20px 20px;
+}
+
+.board-container {
+    display: inline-block;
+}
+
+.diff-selector {
+    border: 2px solid red;
+}
+
+.square:active {
+    opacity: 0.8;
+}
+
+.status-image-container {
+    min-height: 300 px;
+    height: 300px;
+    border: 2px solid red;
+}
